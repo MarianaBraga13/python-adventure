@@ -71,26 +71,40 @@ class Snake:
         self.x = WIDTH // 2
         self.y = WIDTH // 2
         self.speed = 4
+        self.move = False
 
-        self.frames = [
+        # FRAMES
+        self.idle_frames = [
             "snake_idle0",
             "snake_idle1",
+        ]
+
+        # MOVE
+        self.move_frames = [
+            "snake_move0",
+            "snake_move1"
         ]
 
         self.frame_index = 0
         self.frame_timer = 0
 
-        self.actor = Actor(self.frames[0], (self.x, self.y))
+        self.actor = Actor(self.idle_frames[0], (self.x, self.y))
 
     def update(self):
+        self.moving = False
+
         if keyboard.left:
             self.x -= self.speed
+            self.moving = True
         if keyboard.right:
             self.x += self.speed
+            self.moving = True
         if keyboard.up:
             self.y -= self.speed
+            self.moving = True
         if keyboard.down:
             self.y += self.speed
+            self.moving = True
 
         self.animate()   
         self.actor.pos = (self.x, self.y)
@@ -101,8 +115,13 @@ class Snake:
 
         if self.frame_timer >=15:
             self.frame_timer = 0
-            self.frame_index = (self.frame_index + 1) % len(self.frames)
-            self.actor.image = self.frames[self.frame_index]
+            self.frame_index = (self.frame_index + 1) % 2
+
+            if self.moving:
+                self.actor.image = self.move_frames[self.frame_index]
+            else:
+                self.actor.image = self.idle_frames[self.frame_index]
+
 
 def update():
     if game_state == GAME:
