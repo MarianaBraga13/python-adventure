@@ -109,13 +109,27 @@ def load_level(level):
                 viruses.append(Actor("virus", (x, y)))              
 
 # GAME STATE and DRAWING THE HERO
+
+# def draw_ground():
+#     for row_index, row in enumerate(level_map):
+#         for col_index, tile in enumerate(row):
+#             if tile == ".":
+#                 screen.blit(
+#                     "dirt",
+#                     (col_index * TILE_SIZE, row_index * TILE_SIZE)
+#                 )
+
+# def draw_walls():
+#     for row_index, row in enumerate(level_map):
+#         for col_index, tile in enumerate(row):
+#             if tile == "#":
+#                 screen.blit(
+#                     "border",
+#                     (col_index * TILE_SIZE, row_index * TILE_SIZE)
+#                 )
                 
 def draw_game():
     screen.clear()
-
-    if start_button.collidepoint(pos):
-        game_state = GAME
-        load_level = (level_map)
 
     draw_level(level_map)
 
@@ -138,6 +152,7 @@ class Snake:
         self.y = WIDTH // 2
         self.speed = 4
         self.move = False
+        self.jumping = False
         self.underground = True
 
         # IDLE FRAMES
@@ -151,9 +166,28 @@ class Snake:
             "snake_move0",
             "snake_move1"
         ]
+
+        # JUMP FRAMES ^ 
+
+        self.jump_frames = [
+            "snake_jump0",
+            "snake_jump1"
+        ]
+
         self.frame_index = 0
         self.frame_timer = 0
 
+        # GRAVITY
+        self.vy = 0
+        self.gravity = 0.8
+        self.jump_strength = -14
+        self.on_ground = True
+
+        # GROUND
+        self.ground_y = HEIGHT -80
+        self.y = self.ground_y
+
+        self.actor = Actor(self.idle_frames[0], (self.x, self.y))
 
     def update(self):
         self.moving = False
@@ -170,8 +204,16 @@ class Snake:
         if keyboard.down:
             self.y += self.speed
             self.moving = True
-            
-        self.actor = Actor(self.idle_frames[0], (self.x, self.y))
+        if keyboard.space and self.on_ground:
+            self.vy = self.jump_strength
+            self.on_ground = False
+            self.vy += self.gravity
+            self.y += self.vy
+        if self.y >= self.ground_y:
+            self.y = self.ground_y
+            self.vy = 0
+            self.on_ground = True
+
         self.animate()   
         self.actor.pos = (self.x, self.y)
 
@@ -182,6 +224,9 @@ class Snake:
         if self.frame_timer >=15:
             self.frame_timer = 0
             self.frame_index = (self.frame_index + 1) % 2
+            
+            if not self.on_ground:
+                self.actor.image = self.jump_frames[self.frame_index]
 
             if self.moving:
                 self.actor.image = self.move_frames[self.frame_index]
